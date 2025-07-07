@@ -1,0 +1,44 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.game {
+  margin: 0 auto;
+  /* height: 80vh; */
+  max-height: 80vh;
+  display: grid;
+  aspect-ratio: 9 / 16;
+  place-items: center;
+}
+
+.grid {
+  width: 100%;
+  background-color: bisque;
+  display: grid;
+  /* height: 100%; */
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 0px;
+  place-items: center;
+  /* height: 450px; */
+  aspect-ratio: 9 / 16;
+}
+
+.tile {
+  width: 100%;
+  aspect-ratio: 1;
+  color: white;
+  background-color: white;
+  border-radius: 10%;
+  /* border: 1px solid gray; */
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+.tile.active {
+  background-color: rgb(160, 93, 59);
+}
