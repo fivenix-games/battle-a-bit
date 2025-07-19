@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { type Phase } from "./contexts/TurnsContext";
-import { webSocketInstance } from "./socket";
+import { webSocketInstance } from "./socket-client";
 function App() {
   type Player = {
     id: string;
@@ -17,42 +17,10 @@ function App() {
     console.log("Player assigned:", data);
   };
 
-  const resetGame = () => {
-    webSocketInstance.emit("reset");
-    setPlayer(null);
-    setLog([]);
-    setPhase(null);
-  };
+  const resetGame = () => {};
 
-  const connect = () => {
-    console.log("Logging in...");
-    webSocketInstance.emit(
-      "login",
-      player?.name || "",
-      (loggedInPlayer: Array<Player> | Player) => {
-        if (!(loggedInPlayer instanceof Array)) {
-          setPlayer(loggedInPlayer);
-        } else {
-          console.log("Login failed");
-          console.error("available players:", loggedInPlayer);
-        }
-      }
-    );
-  };
-  useEffect(() => {
-    webSocketInstance.on("connect", () => {
-      setConnected(true);
-      console.log("Connected to server with ID:", webSocketInstance.id);
-    });
-
-    webSocketInstance.on("player-assigned", playerAssigned);
-
-    webSocketInstance.on("reset-game", () => {
-      console.log("Game has been reset");
-      resetGame();
-      sessionStorage.setItem("playerId", "");
-    });
-  }, []);
+  const connect = () => {};
+  useEffect(() => {}, []);
 
   return (
     <div className="App">
@@ -63,9 +31,12 @@ function App() {
       <input
         type="text"
         placeholder="Your name"
-        onChange={(e) =>
-          setPlayer((prev) => (prev ? { ...prev, name: e.target.value } : null))
-        }
+        onChange={(e) => {
+          console.log("setting player name", e.target);
+          setPlayer((prev) =>
+            prev ? { ...prev, name: e.target.value } : null
+          );
+        }}
       />
       <button onClick={() => connect()}>Connect</button>
       <h1>Battle-a-bit</h1>
