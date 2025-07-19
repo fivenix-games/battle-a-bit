@@ -1,56 +1,88 @@
-import { useReducer } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import Grid from "./components/Grid/Grid";
-import { GridMatrixContext, type TileType } from "./GridMatrixContext";
-import { gridInit } from "./initialValue";
-import Base from "./components/Base/Base";
-
-export type Action =
-  | {
-      type: "flip";
-      index: number;
-    }
-  | {
-      type: "reset";
-      index?: number;
-    };
-
-const reducer = (state: TileType[], action: Action) => {
-  if (action.type === "flip") {
-    const newValue = { ...state[action.index] };
-    newValue.active = !newValue.active;
-    const newState = [...state];
-    newState.splice(action.index, 1, newValue);
-    return newState;
-  }
-  if (action.type === "reset") {
-    if (action.index) {
-      const newValue = { ...state[action.index] };
-      newValue.active = false;
-      const newState = [...state];
-      newState.splice(action.index, 1, newValue);
-      return newState;
-    } else {
-      return gridInit;
-    }
-  }
-  return state;
-};
+import { type Phase } from "./contexts/TurnsContext";
+import { webSocketInstance } from "./socket";
 function App() {
-  const [gridMatrix, setGridMatrix] = useReducer<TileType[], [action: Action]>(
-    reducer,
-    gridInit
-  );
+  type Player = {
+    id: string;
+    name: string;
+  };
+
+  const [player, setPlayer] = useState<Player | null>();
+  const [log, setLog] = useState<string[]>([]);
+  const [phase, setPhase] = useState<Phase | null>(null);
+  const [connected, setConnected] = useState<boolean>(false);
+
+  const playerAssigned = (data) => {
+    console.log("Player assigned:", data);
+  };
+
+  const resetGame = () => {
+    webSocketInstance.emit("reset");
+    setPlayer(null);
+    setLog([]);
+    setPhase(null);
+  };
+
+  const connect = () => {
+    console.log("Logging in...");
+    webSocketInstance.emit(
+      "login",
+      player?.name || "",
+      (loggedInPlayer: Array<Player> | Player) => {
+        if (!(loggedInPlayer instanceof Array)) {
+          setPlayer(loggedInPlayer);
+        } else {
+          console.log("Login failed");
+          console.error("available players:", loggedInPlayer);
+        }
+      }
+    );
+  };
+  useEffect(() => {
+    webSocketInstance.on("connect", () => {
+      setConnected(true);
+      console.log("Connected to server with ID:", webSocketInstance.id);
+    });
+
+    webSocketInstance.on("player-assigned", playerAssigned);
+
+    webSocketInstance.on("reset-game", () => {
+      console.log("Game has been reset");
+      resetGame();
+      sessionStorage.setItem("playerId", "");
+    });
+  }, []);
 
   return (
-    <GridMatrixContext.Provider value={{ gridMatrix, setGridMatrix }}>
-      <div className="game">
-        <button onClick={() => setGridMatrix({ type: "reset" })}>Reset</button>
-        <Base playerName="Player 1" />
-        <Grid />
-        <Base playerName="Player 2" />
+    <div className="App">
+      {connected && <p>Connected to server</p>}
+      <button style={{ zIndex: 10 }} onClick={resetGame}>
+        Reset
+      </button>
+      <input
+        type="text"
+        placeholder="Your name"
+        onChange={(e) =>
+          setPlayer((prev) => (prev ? { ...prev, name: e.target.value } : null))
+        }
+      />
+      <button onClick={() => connect()}>Connect</button>
+      <h1>Battle-a-bit</h1>
+      {/* <TurnsContext.Provider value={{ phase, setPhase }}>
+        <Game />
+      </TurnsContext.Provider> */}
+      {player && <p>You are Player {player.name}</p>}
+      {/* {player && <Game />} */}
+      <div style={{ marginTop: 20 }}>
+        <h3>Opponent Moves</h3>
+        <div>
+          {log.map((l, i) => (
+            <div key={i}>{l}</div>
+          ))}
+        </div>
       </div>
-    </GridMatrixContext.Provider>
+    </div>
   );
 }
 
