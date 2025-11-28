@@ -1,5 +1,18 @@
 https://chatgpt.com/share/68694433-33e0-8003-a231-8afc29f6012e
 
+Player Joining - 
+1. Player opens a game.
+2. A new socket is established with the server for this player.
+3. Player enters name, and requests 'Join Game'.
+4. On server, if a room exists with less than 2 players, the player is added to the room, else a new room is created and the player is added to the room.
+5. The player waits until room has two players.
+6. Player can join only one room at a time.
+7. Player has to wait 30 seconds for another player to join. If no one joins within 30 seconds, the player is removed from the room, room is destroyed.
+8. Player can decide to exit room before 30 seconds are over.
+9. Player should have unique name in the room. Newly joining player should not name same as the existing player.
+10. Once room is filled, the room emits 'room-ready' event to all players, to indicate that the game can now start.
+
+
 Game Step-by-step after players are connected - 
 1. Server randomly assigns Attack and Defence phases to the players.
 2. 30 second timer starts for both players. This is Setup Phase for the Game. Players cannot see each others Planes or Buildings in this Phase.
